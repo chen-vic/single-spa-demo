@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <p>影子dom</p>
+  <div id="shadow"></div>
+
+  <script>
+    const shadow = document.getElementById('shadow');
+
+    // https://developer.mozilla.org/zh-CN/docs/Web/Web_Components/Using_custom_elements
+    const shadowDom = shadow.attachShadow({ mode: 'closed' });
+    const spanEl = document.createElement('span');
+
+    spanEl.innerText = "I'm span tag";
+    spanEl.className = "spanEl"
+
+    const styleEl = document.createElement("style");
+    styleEl.textContent = `
+      .spanEl {
+        color: red;
+      }
+    `;
+    shadowDom.appendChild(styleEl);
+    shadowDom.appendChild(spanEl);
+  </script>
+</body>
+</html>
