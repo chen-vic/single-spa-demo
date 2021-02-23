@@ -20,11 +20,14 @@ const routes = [
   }
 ]
 
+console.log("process.env.VUE_APP_BASE_URL:", process.env.VUE_APP_BASE_URL);
+
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   // base: process.env.BASE_URL,
-  base: '/vue',
-  routes
-})
+  // base: '/vue',
+  base: process.env.VUE_APP_BASE_URL,
+  routes,
+});
 
 export default router

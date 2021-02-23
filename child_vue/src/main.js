@@ -23,18 +23,33 @@ const vueLifeCycle = singleSpaVue({
 });
 
 // 协议介入 父应用调用这些方法
-export const bootstrap = vueLifeCycle.bootstrap;
-export const mount = vueLifeCycle.mount;
-export const unmount = vueLifeCycle.unmount;
+// export const bootstrap = vueLifeCycle.bootstrap;
+// export const mount = vueLifeCycle.mount;
+// export const unmount = vueLifeCycle.unmount;
+
+export function bootstrap (props) {
+  console.log("app1 bootstrap", props);
+  return vueLifeCycle.bootstrap(() => {})
+}
+
+export function mount (props) {
+  console.log("app1 mount", props);
+  return vueLifeCycle.mount(() => {})
+}
+
+export function unmount (props) {
+  console.log('app1 unmount', props)
+  return vueLifeCycle.unmount(() => {})
+}
 
 // 父应用引用子应用时
 // 设置webpack的publicPath
 // 防止在访问子应用路径是访问到父应用上去
-if(window.singleSpaNavigate) {
-  __webpack_public_path__ = 'http://localhost:3000/'
-}
+// if(window.singleSpaNavigate) {
+//   __webpack_public_path__ = 'http://localhost:3000/'
+// }
 
-// 子应用独立启动
+// 子应用独立启动,不依赖基座，这里即parent_应用
 if (!window.singleSpaNavigate) {
   delete appOptions.el;
 
