@@ -8,13 +8,13 @@
 <body>
   <script>
     // js沙箱 proxy
-    // 快照沙箱 1年前拍照 现在拍一张 （对比后将差异保存起来） 这样可以回到一年前
+    // 快照沙箱 1年前拍照 现在拍一张 （对比后将差异保存起来） 这样可以回到一年前，反之回到一年前后也可以到现在
 
     class SnapshotSandbox {
       constructor() {
         this.proxy = window; // 即window属性
         this.modifyPropsMap = {}; // 记录在window上的修改
-        this.active();  // 默认激活
+        this.active();  // 默认激活 进行记录状态
       }
 
       active() {

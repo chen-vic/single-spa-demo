@@ -34,6 +34,7 @@ if(window.singleSpaNavigate) {
   __webpack_public_path__ = 'http://localhost:3000/'
 }
 
+// 子应用独立启动
 if (!window.singleSpaNavigate) {
   delete appOptions.el;
 
