@@ -26,7 +26,7 @@ if (!window.singleSpaNavigate) {
 
 // https://single-spa.js.org/docs/ecosystem-react/
 const reactLifecycles = singleSpaReact({
-  el: document.getElementById("reactDOM"),
+  el: document.getElementById("reactDOM"), // 基座的dom
   React,
   ReactDOM,
   rootComponent,

@@ -7,7 +7,7 @@
       <router-link to="/about">About-base</router-link> | 
       <p>基座加载子应用</p>
       <router-link to="/vue">加载vue应用</router-link> | 
-      <router-link to="/react">加载vue应用</router-link>
+      <router-link to="/react">加载react应用</router-link>
     </div>
     <hr />
     <router-view/>
