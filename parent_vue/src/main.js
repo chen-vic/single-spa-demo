@@ -21,6 +21,7 @@ async function loadScript(url) {
 // 2. 样式不隔离，受影响
 // 3. 挂载到了window对象下，没有js沙箱的机制
 
+// 注册vue应用
 registerApplication('myVueChildApp', 
   async () => {
     console.log('load myVueChildApp=====>');
@@ -33,6 +34,22 @@ registerApplication('myVueChildApp',
   }, 
   location => location.pathname.startsWith('/vue'), // 用户切换到 /vue 路径下，加载刚才定义的子应用
   {a: 1, b: 2}
+);
+
+// 注册react应用
+registerApplication(
+  "myReactChildApp",
+  async () => {
+    console.log("load myReactChildApp=====>");
+
+    await loadScript("http://localhost:4000/static/js/bundle.js");
+    await loadScript("http://localhost:4000/static/js/vendors~main.chunk.js");
+    await loadScript("http://localhost:4000/static/js/main.chunk.js");
+
+    return window.singleReact; // 即 bootstrap mount unmount
+  },
+  (location) => location.pathname.startsWith("/react"), 
+  { a: 100, b: 200 }
 );
 
 start();

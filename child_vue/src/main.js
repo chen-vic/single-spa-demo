@@ -28,7 +28,6 @@ const vueLifeCycle = singleSpaVue({
 // export const unmount = vueLifeCycle.unmount;
 
 export function bootstrap (props) {
-  console.log("app1 bootstrap", props);
   return vueLifeCycle.bootstrap(() => {})
 }
 
