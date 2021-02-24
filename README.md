@@ -57,6 +57,9 @@ yarn add single-spa-vue
 4. 在child_vue根目录新建`vue.config.js`
 ```javascript
 module.exports = {
+  // https://juejin.cn/post/6862661545592111111#heading-5
+  // 告诉子应用在这个地址加载静态资源，否则会去基座应用的域名下加载
+  publicPath: "http://localhost:3000/",
   configureWebpack: {
     // https://webpack.docschina.org/configuration/output/#outputlibrary
     output: {
@@ -80,7 +83,139 @@ const router = new VueRouter({
 })
 ```
 
-### 2. parent_vue 父应用改造
+### 2. child_react 子应用改造
+#### 1. 基于create-react-app 快速创建一个react项目
+```shell
+npx create-react-app child_react
+```
+
+#### 2. 安装我们所需的依赖
+##### 1. 使用`craco`修改项目配置
+> 这里不通过`yarn run eject`暴露配置，直接使用[craco](https://github.com/gsoft-inc/craco/blob/master/packages/craco/README.md#configuration)添加配置文件修改webpack配置
++ 安装
+```shell
+yarn add @craco/craco -D
+```
++ 在此项目根目录新建`craco.config.js`
+```javascript
+const path = require('path');
+
+// https://github.com/gsoft-inc/craco/blob/master/packages/craco/README.md#configuration
+module.exports = {
+  webpack: {
+    alias: {
+      "@": path.resolve(__dirname, './src')
+    },
+    configure: (webpackConfig, { env, paths }) => {
+      webpackConfig.output.publicPath = "http://localhost:4000/";
+      webpackConfig.output.library = "singleReact";
+      webpackConfig.output.libraryTarget = "umd";
+
+      return webpackConfig;
+    },
+  },
+  devServer: (devServerConfig, { env, paths, proxy, allowedHost }) => {
+    devServerConfig.historyApiFallback = true;
+    devServerConfig.headers = {
+      "Access-Control-Allow-Oirgin": "*",
+    };
+
+    return devServerConfig;
+  },
+};
+```
+
+##### 2. 安装`react-router-dom`
++ 安装
+```shell
+yaen add react-router-dom
+```
++ 使用
+> 在**src**目录下新建**router**目录，创建`index.js`文件
+```javascript
+import { BrowserRouter, Route, Switch, Link } from "react-router-dom";
+import App from '@/App';
+
+function RouterConfig() {
+  return (
+    <div>
+      <BrowserRouter basename="/react">
+        <div>
+          <Link to="/">react home page</Link> | 
+          <Link to="/about">react about page </Link>
+        </div>
+
+        <Switch>
+          <Route exact path="/" component={App} />
+          <Route
+            exact
+            path="/about"
+            render={() => <h1>react about page</h1>}
+          />
+        </Switch>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+export default RouterConfig;
+```
+
+#### 3. 修改入口**src**目录下`index.js`入口文件
+```diff
+import React from "react";
+import ReactDOM from "react-dom";
+import RouterConfig from "./router";
++ import singleSpaReact from 'single-spa-react';
+import "./index.css";
+
+- ReactDOM.render(
+-   <React.StrictMode>
+-     <RouterConfig />
+-   </React.StrictMode>,
+-   document.getElementById("root")
+- );
+
++ const rootComponent = () => {
++   return (
++     <React.StrictMode>
++       <RouterConfig />
++     </React.StrictMode>
++   );
++ }
++ 
++ // 子应用独立运行
++ if (!window.singleSpaNavigate) {
++   ReactDOM.render(rootComponent(), document.getElementById("root"));
++ }
++ 
++ // https://single-spa.js.org/docs/ecosystem-react/
++ const reactLifecycles = singleSpaReact({
++   el: document.getElementById("reactDOM"), // 基座的dom
++   React,
++   ReactDOM,
++   rootComponent,
++   errorBoundary(err, info, props) {
++     // https://reactjs.org/docs/error-boundaries.html
++     return <div>This renders when a catastrophic error occurs</div>;
++   },
++ });
++ 
++ export const bootstrap = async props => {
++   return reactLifecycles.bootstrap(props);
++ }
++ 
++ export const mount = async (props) => {
++   console.log("react===>", props);
++   return reactLifecycles.mount(props);
++ };
++ 
++ export const unmount = async (props) => {
++   return reactLifecycles.unmount(props);
++ };
+```
+
+### 3. parent_vue 父应用改造
 1. 安装 single-spa
 ```shell
 yarn add single-spa
@@ -119,6 +254,22 @@ yarn add single-spa
 +   location => location.pathname.startsWith('/vue'), // 用户切换到 /vue 路径下即激活，加载刚才定义的子应用
 +   {a: 1, b: 2}
 + );
+
++ // 注册react应用
++ registerApplication(
++   "myReactChildApp",
++   async () => {
++     console.log("load myReactChildApp=====>");
++ 
++     await loadScript("http://localhost:4000/static/js/bundle.js");
++     await loadScript("http://localhost:4000/static/js/vendors~main.chunk.js");
++     await loadScript("http://localhost:4000/static/js/main.chunk.js");
++ 
++     return window.singleReact; // 即 bootstrap mount unmount
++   },
++   (location) => location.pathname.startsWith("/react"), 
++   { a: 100, b: 200 }
++ );
 + 
 + start();
 
@@ -139,7 +290,7 @@ new Vue({
 </template>
 ```
 
-### 3. css样式隔离问题
+### 4. css样式隔离问题
 + 子应用之间隔离：
   - Dynamic Stylesheet：动态样式表，当应用切换时移除老应用样式，添加新应用样式
 
